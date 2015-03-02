@@ -19,90 +19,90 @@ var fixer = require('fixer');
 var _ = require("lodash");
 
 describe("api", function() {
-	before(function() {
-		this.timeout(5000);
+  before(function() {
+    this.timeout(5000);
 
-		server = http.createServer(app);
-		server.listen(8181);
+    server = http.createServer(app);
+    server.listen(8181);
 
-		return db.truncate().then(function() { return db.sync(); })
-		.then(function() {
-			var fix = fixer(fixtures,db);
-			return Promise.promisify(fix.load,fix)();
-		});
-	});
+    return db.truncate().then(function() { return db.sync(); })
+    .then(function() {
+      var fix = fixer(fixtures,db);
+      return Promise.promisify(fix.load,fix)();
+    });
+  });
 
-	describe("apps", function() {
-		describe("list route", function() {
-			it("should work", function() {
-				return request.get("localhost:8181/api/apps").promise()
-				.then(function(rawResult) {
-					var result = JSON.parse(rawResult.text)
-					result.length.should.equal(Object.keys(fixtures.App).length);
-				});
-			});
+  describe("apps", function() {
+    describe("list route", function() {
+      it("should work", function() {
+        return request.get("localhost:8181/api/apps").promise()
+        .then(function(rawResult) {
+          var result = JSON.parse(rawResult.text)
+          result.length.should.equal(Object.keys(fixtures.App).length);
+        });
+      });
 
-		});
+    });
 
-		describe("sub-routes", function() {
-			var app;
-			before(function() {
-				return db.App.find({name: fixtures.App.test.name})
-				.then(function(testApp) {
-					app=testApp;
-					return app;
-				});
-			});
+    describe("sub-routes", function() {
+      var app;
+      before(function() {
+        return db.App.find({name: fixtures.App.test.name})
+        .then(function(testApp) {
+          app=testApp;
+          return app;
+        });
+      });
 
-			describe("users", function() {
-				it("should return only app-matching users", function() {
-					return request.get("localhost:8181/api/apps/" +
-						app.id + "/users").promise()
-						.then(function(rawResult) {
-							var result = JSON.parse(rawResult.text) ;
-							result.length.should.equal(_.filter(fixtures.AppUser,
-									function(u) {
-										return u.App=="test"
-									}).length);
-						});
-				});
-				it("should filter by username", function() {
-						return request.get("localhost:8181/api/apps/" +
-						app.id + "/users" +
-						"?username=foobar").promise()
-						.then(function(rawResult) {
-							var result = JSON.parse(rawResult.text) ;
-							result.length.should.equal(1);
-							result[0].username.should.equal("foobar");
-						});
-				});
-			});
-			describe("create", function() {
-				it("should add one that shows up", function() {
-					return request.post("localhost:8181/api/apps/" +
-						app.id + "/users").send({
-							username: "bob",
-						}).promise()
-					.then(function(rawResult) {
-						var result = JSON.parse(rawResult.text);
+      describe("users", function() {
+        it("should return only app-matching users", function() {
+          return request.get("localhost:8181/api/apps/" +
+            app.id + "/users").promise()
+            .then(function(rawResult) {
+              var result = JSON.parse(rawResult.text) ;
+              result.length.should.equal(_.filter(fixtures.AppUser,
+                  function(u) {
+                    return u.App=="test"
+                  }).length);
+            });
+        });
+        it("should filter by username", function() {
+            return request.get("localhost:8181/api/apps/" +
+            app.id + "/users" +
+            "?username=foobar").promise()
+            .then(function(rawResult) {
+              var result = JSON.parse(rawResult.text) ;
+              result.length.should.equal(1);
+              result[0].username.should.equal("foobar");
+            });
+        });
+      });
+      describe("create", function() {
+        it("should add one that shows up", function() {
+          return request.post("localhost:8181/api/apps/" +
+            app.id + "/users").send({
+              username: "bob",
+            }).promise()
+          .then(function(rawResult) {
+            var result = JSON.parse(rawResult.text);
 
-						return request.get("localhost:8181/api/apps/" +
-							app.id + "/users").promise();
-					})
-					.then(function(rawResult) {
-						var result = JSON.parse(rawResult.text) ;
-						result.length.should.equal(_.filter(fixtures.AppUser,
-								function(u) {
-									return u.App=="test"
-								}).length + 1);
-						var bob = _.find(result,{username: "bob"});
-						expect(bob).to.exist;
-						bob.username.should.equal("bob");
-					})
-				});
-			})
+            return request.get("localhost:8181/api/apps/" +
+              app.id + "/users").promise();
+          })
+          .then(function(rawResult) {
+            var result = JSON.parse(rawResult.text) ;
+            result.length.should.equal(_.filter(fixtures.AppUser,
+                function(u) {
+                  return u.App=="test"
+                }).length + 1);
+            var bob = _.find(result,{username: "bob"});
+            expect(bob).to.exist;
+            bob.username.should.equal("bob");
+          })
+        });
+      })
 
-		});
+    });
 
-	});
+  });
 });
