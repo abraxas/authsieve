@@ -19,7 +19,8 @@
     "serve-favicon": "~2.2.0",
     "sqlite3": "^3.0.5",
     "uuid": "^2.0.1",
-    "nconf": "^0.7.1"
+    "nconf": "^0.7.1",
+    "base64": "^2.1.0"
   },
   "devDependencies": {
     "bluebird": "^2.9.13",

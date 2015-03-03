@@ -63,5 +63,14 @@ describe("models", function() {
         });
       });
     });
+    describe("basicAuthenticate", function() {
+      it("should work", function() {
+        return db.AppUser.basicAuthenticate("Zm9vYmFyOnRlc3RfaGFzaA==")
+        .then(function(user) {
+          expect(user).to.exist;
+          user.username.should.equal('foobar');
+        });
+      });
+    });
   });
 });
