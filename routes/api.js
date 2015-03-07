@@ -58,22 +58,31 @@ router.use('/apps/:app_id', (function() {
   });
 
   appRouter.post('/authenticate', function(req,res,next) {
-    var method = req.body.method || 'basic';
-    if(method == 'basic') {
-      db.AppUser.basicAuthenticate(req.body.credentials, function(user) {
-        if(appUser) {
-          var u = appUser.toJSON();
-          u.status = "Success";
-          res.json(u);
-        }
-        else {
-          res.json({
-            error: "User Authentication Failed",
-            status: "Failed",
-          });
-        }
-      });
+    var methodName = req.body.method || 'login';
+
+    var method = function(cb) { return cb(false); }
+    if(methodName == 'basic') {
+      method = db.AppUser.basicAuthenticate.bind(db.AppUser,req.body.credentials);
     }
+    if(methodName == 'login') {
+      var username = req.body.username || req.body.user || req.body.email;
+      var password = req.body.password || req.body.pass || req.body.pw;
+      method = db.AppUser.authenticate.bind(db.AppUser,username,password);
+    }
+
+    return method().then(function(appUser) {
+      if(appUser) {
+        var u = appUser.toJSON();
+        u.status = "Success";
+        res.json(u);
+      }
+      else {
+        res.json({
+          error: "User Authentication Failed",
+          status: "Failed",
+        });
+      }
+    });
   });
 
   return appRouter;

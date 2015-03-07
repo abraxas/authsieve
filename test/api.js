@@ -66,6 +66,7 @@ describe("api", function() {
                   }).length);
             });
         });
+      
         it("should filter by username", function() {
             return request.get("localhost:8181/api/apps/" +
             app.id + "/users" +
@@ -77,6 +78,7 @@ describe("api", function() {
             });
         });
       });
+      
       describe("create", function() {
         it("should add one that shows up", function() {
           return request.post("localhost:8181/api/apps/" +
@@ -100,7 +102,39 @@ describe("api", function() {
             bob.username.should.equal("bob");
           })
         });
-      })
+      });
+
+      describe("authenticate", function() {
+        it("should work", function() {
+          return request.post("localhost:8181/api/apps/" +
+            app.id + "/authenticate").send({
+              username: "foobar",
+              password: "test_hash",
+            }).promise()
+          .then(function(rawResult) {
+            var result = JSON.parse(rawResult.text);
+            result.status.should.equal("Success");
+            result.username.should.equal("foobar");
+            return null;
+          })
+        });
+      });
+
+      describe("basic authenticate", function() {
+        it("should work", function() {
+          return request.post("localhost:8181/api/apps/" +
+            app.id + "/authenticate").send({
+              method: "basic",
+              credentials: "Zm9vYmFyOnRlc3RfaGFzaA==",
+            }).promise()
+          .then(function(rawResult) {
+            var result = JSON.parse(rawResult.text);
+            result.status.should.equal("Success");
+            result.username.should.equal("foobar");
+            return null;
+          })
+        });
+      });
 
     });
 
